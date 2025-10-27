@@ -1,36 +1,106 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sveaaesthetic - Nagel Design Studio Terminverwaltung
 
-## Getting Started
+Eine minimalistische Terminverwaltungsanwendung für das Nagel Design Studio Sveaaesthetic.
 
-First, run the development server:
+## Features
+
+### ✅ Admin Bereich
+- Admin Login mit einfacher Authentifizierung
+- Übersicht der nächsten Termine (Name, Datum, Uhrzeit, Kommentar)
+- Kalenderansicht aller gebuchten Termine
+- Navigation zwischen Übersicht und Kalender
+
+### 🚧 Geplant
+- Kundenbereich zum Buchen von Terminen
+- Kunden anlegen und verwalten
+- Erweiterte Authentifizierung
+
+## Technologie-Stack
+
+- **Framework**: Next.js 16 mit App Router
+- **Sprache**: TypeScript
+- **Datenbank**: Firebase Firestore
+- **Bilder**: Base64 in Firestore (kein Storage Upgrade nötig)
+- **Styling**: Tailwind CSS
+- **Design**: Minimalistisch (weiß, grau)
+
+## Entwicklung
+
+### Installation
+
+```bash
+npm install
+```
+
+### Firebase Setup
+
+1. Erstelle ein Firebase-Projekt auf [console.firebase.google.com](https://console.firebase.google.com)
+2. Gehe zu Projekt-Einstellungen → Allgemein → Deine Apps → Web-App hinzufügen
+3. Kopiere die Firebase Config
+4. Erstelle eine `.env.local` Datei im Projektverzeichnis:
+   ```bash
+   cp .env.local.example .env.local
+   ```
+5. Füge deine Firebase Credentials in `.env.local` ein
+
+### Firebase Datenbank einrichten
+
+1. Gehe zu Firebase Console → Firestore Database
+2. Erstelle die Database im Testmodus (später Sicherheitsregeln anpassen)
+3. Die Collections werden automatisch erstellt:
+   - `customers` - Speichert Kundendaten
+   - `appointments` - Speichert Termine mit Inspo-Bildern
+
+### Firebase Storage (Optional)
+
+Falls du **Firebase Storage** nutzen möchtest (für große Bilder):
+1. Gehe zu Firebase Console → Storage
+2. Erstelle einen Storage Bucket (benötigt oft ein Upgrade)
+3. Der Ordner `inspo-images/` wird automatisch für Bilder verwendet
+
+**Alternativ** (ohne Upgrade): Die App speichert Bilder als Base64 direkt in Firestore.
+
+### Entwicklungsserver starten
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Öffne [http://localhost:3000](http://localhost:3000) im Browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Login
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Admin-Zugangsdaten:**
+- Benutzername: `admin`
+- Passwort: `admin`
 
-## Learn More
+## Projektstruktur
 
-To learn more about Next.js, take a look at the following resources:
+```
+/
+├── app/
+│   ├── admin/          # Admin-Bereich
+│   │   ├── login/      # Login-Seite
+│   │   └── page.tsx    # Admin-Hauptseite
+│   ├── api/            # API Routes
+│   │   ├── appointments/
+│   │   └── customers/
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx        # Startseite
+├── components/         # React Components
+│   ├── AdminOverview.tsx
+│   └── CalendarView.tsx
+├── lib/
+│   └── storage.ts      # Datenbank-Service
+└── types/
+    └── index.ts        # TypeScript Interfaces
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Nächste Schritte
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] Erweiterte Authentifizierung implementieren
+- [ ] Persistente Datenbank integrieren
+- [ ] Kundenbereich entwickeln
+- [ ] "Kunde anlegen" Feature implementieren
+- [ ] Responsives Design optimieren
