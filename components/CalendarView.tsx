@@ -24,7 +24,14 @@ export default function CalendarView() {
     }
   };
 
-  const appointmentsByDate = appointments.reduce((acc, apt) => {
+  const now = new Date();
+  // Filtere nur zukünftige Termine
+  const futureAppointments = appointments.filter(apt => {
+    const appointmentDate = new Date(`${apt.date}T${apt.time}`);
+    return appointmentDate >= now;
+  });
+
+  const appointmentsByDate = futureAppointments.reduce((acc, apt) => {
     const date = apt.date;
     if (!acc[date]) {
       acc[date] = [];

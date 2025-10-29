@@ -33,37 +33,6 @@ export default function CustomerPage() {
     }
   };
 
-  const confirmAppointment = async (id: string) => {
-    try {
-      await fetch(`/api/appointments/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'confirmed',
-          confirmedByCustomer: true,
-        }),
-      });
-      fetchAppointments();
-    } catch (error) {
-      console.error('Fehler bei Bestätigung:', error);
-    }
-  };
-
-  const rejectAppointment = async (id: string) => {
-    try {
-      await fetch(`/api/appointments/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: 'rejected',
-          confirmedByCustomer: false,
-        }),
-      });
-      fetchAppointments();
-    } catch (error) {
-      console.error('Fehler bei Ablehnung:', error);
-    }
-  };
 
   const now = new Date();
 
@@ -107,50 +76,25 @@ export default function CustomerPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-light text-gray-600 mb-8">
-          Hallo {decodedName}!
-        </h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-2xl font-light text-gray-600">
+            Hallo {decodedName}!
+          </h1>
+          <a
+            href={`/book/${encodeURIComponent(decodedName)}`}
+            className="px-4 py-2 bg-gray-800 text-white hover:bg-gray-700 transition-colors text-sm"
+          >
+            Neuen Termin buchen
+          </a>
+        </div>
 
-        {/* Offene Bestätigungen */}
+        {/* Info-Box für ausstehende Termine */}
         {pendingAppointments.length > 0 && (
-          <div className="mb-8 p-6 border-2 border-yellow-300 bg-yellow-50">
-            <h2 className="text-lg font-medium text-gray-800 mb-4">
-              🎯 Bitte bestätigen: {pendingAppointments.length} Termin(e) ausstehend
-            </h2>
-            <div className="space-y-4">
-              {pendingAppointments.map((appointment) => (
-                <div
-                  key={appointment.id}
-                  className="bg-white p-4 border border-gray-200 rounded"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-medium text-gray-800">
-                        {new Date(appointment.date).toLocaleDateString('de-DE')} um{' '}
-                        {appointment.time} Uhr
-                      </p>
-                      {appointment.comment && (
-                        <p className="text-sm text-gray-600 mt-1">{appointment.comment}</p>
-                      )}
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      <button
-                        onClick={() => confirmAppointment(appointment.id)}
-                        className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-colors text-sm"
-                      >
-                        Bestätigen
-                      </button>
-                      <button
-                        onClick={() => rejectAppointment(appointment.id)}
-                        className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors text-sm"
-                      >
-                        Ablehnen
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="mb-8 p-4 border border-yellow-300 bg-yellow-50 rounded">
+            <p className="text-sm text-gray-700">
+              ⏳ Du hast {pendingAppointments.length} ausstehende Termin(e). 
+              Bitte warte auf die Bestätigung durch das Studio.
+            </p>
           </div>
         )}
 
@@ -189,9 +133,7 @@ export default function CustomerPage() {
                   <AppointmentCard
                     key={appointment.id}
                     appointment={appointment}
-                    canConfirm={appointment.status === 'pending'}
-                    onConfirm={() => confirmAppointment(appointment.id)}
-                    onReject={() => rejectAppointment(appointment.id)}
+                    canConfirm={false}
                   />
                 ))}
               </div>
@@ -224,14 +166,10 @@ export default function CustomerPage() {
 
 function AppointmentCard({
   appointment,
-  canConfirm,
-  onConfirm,
-  onReject,
+  canConfirm = false,
 }: {
   appointment: Appointment;
-  canConfirm: boolean;
-  onConfirm?: () => void;
-  onReject?: () => void;
+  canConfirm?: boolean;
 }) {
   const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800',
