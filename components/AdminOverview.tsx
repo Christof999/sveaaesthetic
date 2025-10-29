@@ -55,6 +55,10 @@ export default function AdminOverview() {
   };
 
   const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endOfWeek = new Date(today);
+  endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Ende der Woche (Sonntag)
+
   const lastLoginDate = lastLogin ? new Date(lastLogin) : null;
 
   // Neue Termine: Erstellt nach letztem Login und nicht als gesehen markiert
@@ -67,7 +71,28 @@ export default function AdminOverview() {
   // Unbestätigte Termine (pending)
   const pendingAppointments = appointments.filter(apt => apt.status === 'pending');
 
-  // Bestätigte, zukünftige Termine
+  // Termine heute
+  const todayAppointments = appointments
+    .filter(apt => {
+      const appointmentDate = new Date(`${apt.date}T${apt.time}`);
+      const aptDay = new Date(appointmentDate.getFullYear(), appointmentDate.getMonth(), appointmentDate.getDate());
+      return apt.status === 'confirmed' && aptDay.getTime() === today.getTime();
+    })
+    .sort((a, b) => a.time.localeCompare(b.time));
+
+  // Termine diese Woche
+  const thisWeekAppointments = appointments
+    .filter(apt => {
+      const appointmentDate = new Date(`${apt.date}T${apt.time}`);
+      return apt.status === 'confirmed' && appointmentDate >= today && appointmentDate <= endOfWeek;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(`${a.date}T${a.time}`);
+      const dateB = new Date(`${b.date}T${b.time}`);
+      return dateA.getTime() - dateB.getTime();
+    });
+
+  // Bestätigte, zukünftige Termine (alle)
   const confirmedUpcoming = appointments
     .filter(apt => {
       const appointmentDate = new Date(`${apt.date}T${apt.time}`);
@@ -80,12 +105,45 @@ export default function AdminOverview() {
     })
     .slice(0, 10);
 
+  // Statistiken
+  const stats = {
+    today: todayAppointments.length,
+    thisWeek: thisWeekAppointments.length,
+    pending: pendingAppointments.length,
+    new: newAppointments.length,
+  };
+
   if (loading) {
     return <div className="text-gray-500">Lädt...</div>;
   }
 
   return (
     <div className="space-y-8">
+      {/* Statistiken Dashboard */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard
+          label="Heute"
+          value={stats.today}
+          color="bg-blue-50 border-blue-200 text-blue-700"
+        />
+        <StatCard
+          label="Diese Woche"
+          value={stats.thisWeek}
+          color="bg-purple-50 border-purple-200 text-purple-700"
+        />
+        <StatCard
+          label="Ausstehend"
+          value={stats.pending}
+          color="bg-yellow-50 border-yellow-200 text-yellow-700"
+        />
+        <StatCard
+          label="Neu"
+          value={stats.new}
+          color="bg-red-50 border-red-200 text-red-700"
+          pulse={stats.new > 0}
+        />
+      </div>
+
       {/* Neue Termine */}
       {newAppointments.length > 0 && (
         <div>
@@ -107,11 +165,47 @@ export default function AdminOverview() {
         </div>
       )}
 
+      {/* Termine heute */}
+      {todayAppointments.length > 0 && (
+        <div>
+          <h2 className="text-xl font-light text-gray-700 mb-4">
+            📅 Heute ({todayAppointments.length})
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {todayAppointments.map((appointment) => (
+              <CompactAppointmentCard
+                key={appointment.id}
+                appointment={appointment}
+                onStatusChange={(status) => updateStatus(appointment.id, status)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Diese Woche */}
+      {thisWeekAppointments.length > 0 && (
+        <div>
+          <h2 className="text-xl font-light text-gray-700 mb-4">
+            📆 Diese Woche ({thisWeekAppointments.length})
+          </h2>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {thisWeekAppointments.map((appointment) => (
+              <CompactAppointmentCard
+                key={appointment.id}
+                appointment={appointment}
+                onStatusChange={(status) => updateStatus(appointment.id, status)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Unbestätigte Termine */}
       {pendingAppointments.length > 0 && (
         <div>
           <h2 className="text-xl font-light text-gray-700 mb-4">
-            Unbestätigte Termine ({pendingAppointments.length})
+            ⏳ Unbestätigte Termine ({pendingAppointments.length})
           </h2>
           <div className="space-y-4">
             {pendingAppointments.map((appointment) => (
@@ -126,12 +220,10 @@ export default function AdminOverview() {
         </div>
       )}
 
-      {/* Bestätigte, zukünftige Termine */}
-      <div>
-        <h2 className="text-xl font-light text-gray-700 mb-6">Nächste Termine</h2>
-        {confirmedUpcoming.length === 0 ? (
-          <p className="text-gray-400">Keine anstehenden Termine</p>
-        ) : (
+      {/* Alle nächsten Termine */}
+      {confirmedUpcoming.length > 0 && (
+        <div>
+          <h2 className="text-xl font-light text-gray-700 mb-6">Alle nächsten Termine</h2>
           <div className="space-y-4">
             {confirmedUpcoming.map((appointment) => (
               <AppointmentCard
@@ -142,6 +234,82 @@ export default function AdminOverview() {
               />
             ))}
           </div>
+        </div>
+      )}
+
+      {newAppointments.length === 0 && 
+       pendingAppointments.length === 0 && 
+       confirmedUpcoming.length === 0 && 
+       todayAppointments.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-400 text-lg">Keine Termine vorhanden</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  color,
+  pulse = false,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  pulse?: boolean;
+}) {
+  return (
+    <div className={`border rounded-lg p-4 ${color} ${pulse ? 'animate-pulse' : ''}`}>
+      <p className="text-sm font-medium mb-1">{label}</p>
+      <p className="text-3xl font-light">{value}</p>
+    </div>
+  );
+}
+
+function CompactAppointmentCard({
+  appointment,
+  onStatusChange,
+}: {
+  appointment: Appointment;
+  onStatusChange: (status: Appointment['status']) => void;
+}) {
+  const isToday = () => {
+    const today = new Date();
+    const aptDate = new Date(appointment.date);
+    return today.toDateString() === aptDate.toDateString();
+  };
+
+  return (
+    <div
+      className={`border p-4 rounded hover:border-gray-300 transition-colors ${
+        isToday() ? 'border-blue-300 bg-blue-50' : 'border-gray-200'
+      }`}
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <h3 className="font-medium text-gray-800 mb-1">{appointment.customerName}</h3>
+          <div className="space-y-1 text-xs text-gray-600">
+            <p>
+              {new Date(appointment.date).toLocaleDateString('de-DE', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+              })}
+            </p>
+            <p className="font-medium">{appointment.time} Uhr</p>
+          </div>
+          {appointment.comment && (
+            <p className="text-xs text-gray-500 mt-2 line-clamp-2">{appointment.comment}</p>
+          )}
+        </div>
+        {appointment.imageUrl && (
+          <img
+            src={appointment.imageUrl}
+            alt="Inspo"
+            className="w-16 h-16 object-cover rounded border border-gray-200 ml-2"
+          />
         )}
       </div>
     </div>
@@ -190,10 +358,14 @@ function AppointmentCard({
           <div className="space-y-1 text-sm text-gray-600">
             <p>
               <span className="font-medium">Datum:</span>{' '}
-              {new Date(appointment.date).toLocaleDateString('de-DE')}
+              {new Date(appointment.date).toLocaleDateString('de-DE', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+              })}
             </p>
             <p>
-              <span className="font-medium">Uhrzeit:</span> {appointment.time}
+              <span className="font-medium">Uhrzeit:</span> {appointment.time} Uhr
             </p>
             {appointment.comment && (
               <p className="mt-3 text-gray-500 italic">{appointment.comment}</p>
@@ -205,7 +377,7 @@ function AppointmentCard({
               <img
                 src={appointment.imageUrl}
                 alt="Inspo"
-                className="max-w-xs h-auto border border-gray-200"
+                className="max-w-xs h-auto border border-gray-200 rounded"
               />
             </div>
           )}
