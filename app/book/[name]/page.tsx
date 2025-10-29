@@ -11,6 +11,7 @@ export default function BookingPage() {
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [comment, setComment] = useState('');
+  const [email, setEmail] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -63,6 +64,25 @@ export default function BookingPage() {
         console.log('Image uploaded successfully');
       }
 
+      // Update/Create customer with email if provided
+      if (email.trim()) {
+        try {
+          await fetch('/api/customers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: decodedName,
+              email: email.trim(),
+            }),
+          });
+          // Note: Falls Customer bereits existiert, muss die API das updaten
+          // Für jetzt erstellen wir einfach einen neuen oder überschreiben
+        } catch (err) {
+          console.warn('Konnte E-Mail nicht speichern:', err);
+          // Nicht kritisch - Termin soll trotzdem erstellt werden
+        }
+      }
+
       // Create appointment
       const appointment = {
         customerId: decodedName, // Simplified: using name as ID
@@ -96,6 +116,7 @@ export default function BookingPage() {
       setSelectedDate('');
       setSelectedTime('');
       setComment('');
+      setEmail('');
       setSelectedFile(null);
     } catch (err) {
       console.error('Error in handleSubmit:', err);
@@ -133,6 +154,7 @@ export default function BookingPage() {
                   setSelectedDate('');
                   setSelectedTime('');
                   setComment('');
+                  setEmail('');
                   setSelectedFile(null);
                 }}
                 className="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
@@ -200,6 +222,22 @@ export default function BookingPage() {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                E-Mail <span className="text-gray-400 text-xs font-normal">(optional - für Benachrichtigungen)</span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-gray-400"
+                placeholder="deine@email.com"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Wir benachrichtigen dich per E-Mail, sobald dein Termin bestätigt oder abgelehnt wurde.
+              </p>
             </div>
 
             <div>

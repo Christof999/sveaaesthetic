@@ -9,6 +9,7 @@ interface CreateCustomerProps {
 
 export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -33,11 +34,14 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
     setError('');
 
     try {
-      console.log('Sending customer data:', { name });
+      console.log('Sending customer data:', { name, email: email || undefined });
       const response = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ 
+          name,
+          email: email.trim() || undefined, // Nur senden wenn nicht leer
+        }),
       });
 
       console.log('Response status:', response.status);
@@ -50,6 +54,7 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
 
       console.log('Customer created successfully');
       setName('');
+      setEmail('');
       await fetchCustomers(); // Liste aktualisieren
       if (onSuccess) {
         onSuccess();
@@ -79,6 +84,18 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
               required
             />
           </div>
+          <div>
+            <label className="block text-sm text-gray-600 mb-2">
+              E-Mail <span className="text-gray-400 text-xs">(optional - für Benachrichtigungen)</span>
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-gray-400"
+              placeholder="kundin@example.com"
+            />
+          </div>
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <button
             type="submit"
@@ -101,7 +118,12 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
                 key={customer.id}
                 className="border border-gray-200 p-4 hover:border-gray-300 transition-colors flex items-center justify-between"
               >
-                <p className="text-gray-800">{customer.name}</p>
+                <div>
+                  <p className="text-gray-800 font-medium">{customer.name}</p>
+                  {customer.email && (
+                    <p className="text-sm text-gray-500 mt-1">{customer.email}</p>
+                  )}
+                </div>
                 <button
                   onClick={async () => {
                     const response = await fetch(`/api/qrcode/${customer.id}?name=${encodeURIComponent(customer.name)}`);

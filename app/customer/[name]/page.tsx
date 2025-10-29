@@ -217,22 +217,6 @@ function AppointmentCard({
             </div>
           )}
         </div>
-        {canConfirm && (
-          <div className="ml-4 flex flex-col gap-2">
-            <button
-              onClick={onConfirm}
-              className="px-4 py-2 bg-green-600 text-white hover:bg-green-700 transition-colors text-sm whitespace-nowrap"
-            >
-              Bestätigen
-            </button>
-            <button
-              onClick={onReject}
-              className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors text-sm whitespace-nowrap"
-            >
-              Ablehnen
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

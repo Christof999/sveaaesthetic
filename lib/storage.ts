@@ -38,6 +38,32 @@ export const StorageService = {
       return undefined;
     }
   },
+
+  async getCustomerByName(name: string): Promise<Customer | undefined> {
+    try {
+      const customersRef = collection(db, 'customers');
+      const q = query(customersRef, where('name', '==', name));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const doc = snapshot.docs[0];
+        return { id: doc.id, ...doc.data() } as Customer;
+      }
+      return undefined;
+    } catch (error) {
+      console.error('Error fetching customer by name:', error);
+      return undefined;
+    }
+  },
+
+  async updateCustomer(id: string, customer: Partial<Customer>): Promise<void> {
+    try {
+      const customerRef = doc(db, 'customers', id);
+      await updateDoc(customerRef, customer);
+    } catch (error) {
+      console.error('Error updating customer:', error);
+      throw error;
+    }
+  },
   
   // Appointments
   async getAppointments(): Promise<Appointment[]> {

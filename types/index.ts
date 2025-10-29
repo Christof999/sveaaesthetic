@@ -1,6 +1,8 @@
 export interface Customer {
   id: string;
   name: string;
+  email?: string; // Optional: E-Mail für Benachrichtigungen
+  phone?: string; // Optional: Telefonnummer für SMS-Benachrichtigungen
 }
 
 export type AppointmentStatus = 'pending' | 'confirmed' | 'rejected' | 'completed';
