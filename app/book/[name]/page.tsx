@@ -114,18 +114,32 @@ export default function BookingPage() {
           <h1 className="text-3xl font-light text-gray-700 mb-4">SVEAAESTHETIC</h1>
           <div className="border border-gray-200 p-8">
             <h2 className="text-xl font-medium text-gray-800 mb-4">Termin erfolgreich gebucht!</h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4">
               Vielen Dank {decodedName}! Dein Termin wurde erfolgreich gebucht.
             </p>
-            <button
-              onClick={() => {
-                setSuccess(false);
-                window.location.reload();
-              }}
-              className="px-6 py-2 bg-gray-800 text-white hover:bg-gray-700 transition-colors"
-            >
-              Neuen Termin buchen
-            </button>
+            <p className="text-sm text-gray-500 mb-6">
+              Bitte bestätige deinen Termin auf deiner Übersichtsseite.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <a
+                href={`/customer/${encodeURIComponent(decodedName)}`}
+                className="px-6 py-2 bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+              >
+                Zur Übersicht
+              </a>
+              <button
+                onClick={() => {
+                  setSuccess(false);
+                  setSelectedDate('');
+                  setSelectedTime('');
+                  setComment('');
+                  setSelectedFile(null);
+                }}
+                className="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+              >
+                Neuen Termin buchen
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -139,9 +153,17 @@ export default function BookingPage() {
           SVEAAESTHETIC
         </h1>
         <div className="border-t border-gray-200 pt-8">
-          <h2 className="text-2xl font-light text-gray-700 mb-6">
-            Hallo {decodedName},
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-light text-gray-700">
+              Hallo {decodedName},
+            </h2>
+            <a
+              href={`/customer/${encodeURIComponent(decodedName)}`}
+              className="text-sm text-gray-500 hover:text-gray-700 underline"
+            >
+              Meine Termine
+            </a>
+          </div>
           <p className="text-gray-600 mb-8">
             Hier hast du die Möglichkeit einen Termin bei mir zu buchen.
           </p>

@@ -3,6 +3,8 @@ export interface Customer {
   name: string;
 }
 
+export type AppointmentStatus = 'pending' | 'confirmed' | 'rejected' | 'completed';
+
 export interface Appointment {
   id: string;
   customerId: string;
@@ -11,4 +13,8 @@ export interface Appointment {
   time: string;
   comment: string;
   imageUrl?: string;
+  status: AppointmentStatus;
+  createdAt: string; // ISO timestamp
+  seenByAdmin?: boolean; // Ob Admin den Termin bereits gesehen hat
+  confirmedByCustomer?: boolean; // Ob Kundin bestätigt hat
 }

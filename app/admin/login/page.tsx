@@ -15,6 +15,8 @@ export default function AdminLogin() {
     // Einfache Authentifizierung (später durch sichere Methode ersetzen)
     if (username === 'admin' && password === 'admin') {
       sessionStorage.setItem('isAdmin', 'true');
+      // Speichere letzten Login-Zeitpunkt
+      localStorage.setItem('lastAdminLogin', new Date().toISOString());
       router.push('/admin');
     } else {
       setError('Ungültige Anmeldedaten');
