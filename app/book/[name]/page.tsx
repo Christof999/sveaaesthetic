@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function BookingPage() {
   const params = useParams();
@@ -16,6 +16,23 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [customerExists, setCustomerExists] = useState<boolean | null>(null);
+
+  // Prüfe ob Kundin existiert
+  useEffect(() => {
+    const checkCustomer = async () => {
+      try {
+        const response = await fetch('/api/customers');
+        const data = await response.json();
+        const customer = (data.customers || []).find((c: { name: string }) => c.name === decodedName);
+        setCustomerExists(customer !== undefined);
+      } catch (err) {
+        console.error('Error checking customer:', err);
+        setCustomerExists(false);
+      }
+    };
+    checkCustomer();
+  }, [decodedName]);
 
   const timeSlots = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -83,6 +100,15 @@ export default function BookingPage() {
         }
       }
 
+      // Prüfe nochmal ob Kundin existiert bevor Termin erstellt wird
+      const customerCheckResponse = await fetch('/api/customers');
+      const customerCheckData = await customerCheckResponse.json();
+      const customer = (customerCheckData.customers || []).find((c: { name: string }) => c.name === decodedName);
+      
+      if (!customer) {
+        throw new Error('Kundin nicht gefunden. Neue Termine können nicht mehr gebucht werden.');
+      }
+
       // Create appointment
       const appointment = {
         customerId: decodedName, // Simplified: using name as ID
@@ -127,6 +153,35 @@ export default function BookingPage() {
   };
 
   const minDate = new Date().toISOString().split('T')[0];
+
+  // Zeige Fehlerseite wenn Kundin nicht existiert
+  if (customerExists === false) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center px-6">
+        <div className="max-w-md w-full text-center">
+          <h1 className="text-4xl font-light text-gray-600 mb-8">SVEAAESTHETIC</h1>
+          <div className="border border-gray-200 p-8">
+            <h2 className="text-xl font-medium text-gray-800 mb-4">Zugriff nicht möglich</h2>
+            <p className="text-gray-600 mb-4">
+              Diese Buchungsseite ist nicht mehr verfügbar.
+            </p>
+            <p className="text-sm text-gray-500">
+              Bitte kontaktiere das Studio für weitere Informationen.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Warte auf Prüfung
+  if (customerExists === null) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-gray-500">Lädt...</div>
+      </div>
+    );
+  }
 
   if (success) {
     return (

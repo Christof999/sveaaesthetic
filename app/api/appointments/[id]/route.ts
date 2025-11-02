@@ -18,9 +18,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Update appointment
     await StorageService.updateAppointment(id, body);
 
-    // Sende E-Mail-Benachrichtigung wenn Status geändert wurde zu 'confirmed' oder 'rejected'
+    // Sende E-Mail-Benachrichtigung wenn Status geändert wurde zu 'confirmed', 'rejected' oder 'cancelled'
     if (body.status && body.status !== appointment.status && 
-        (body.status === 'confirmed' || body.status === 'rejected')) {
+        (body.status === 'confirmed' || body.status === 'rejected' || body.status === 'cancelled')) {
       
       // Hole Kundin-Daten für E-Mail-Adresse
       const customers = await StorageService.getCustomers();
@@ -37,7 +37,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
             customerName: appointment.customerName,
             date: appointment.date,
             time: appointment.time,
-            status: body.status as 'confirmed' | 'rejected',
+            status: body.status as 'confirmed' | 'rejected' | 'cancelled',
             comment: appointment.comment,
           });
         } catch (emailError) {

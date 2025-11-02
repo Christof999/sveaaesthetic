@@ -312,6 +312,20 @@ function CompactAppointmentCard({
           />
         )}
       </div>
+      {(appointment.status === 'confirmed' || appointment.status === 'pending') && (
+        <div className="mt-3 pt-3 border-t border-gray-200">
+          <button
+            onClick={() => {
+              if (confirm(`Möchtest du den Termin für ${appointment.customerName} wirklich stornieren?`)) {
+                onStatusChange('cancelled');
+              }
+            }}
+            className="px-2 py-1 text-xs bg-orange-600 text-white hover:bg-orange-700 transition-colors"
+          >
+            Stornieren
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -332,6 +346,7 @@ function AppointmentCard({
     confirmed: 'bg-green-100 text-green-800',
     rejected: 'bg-red-100 text-red-800',
     completed: 'bg-gray-100 text-gray-800',
+    cancelled: 'bg-orange-100 text-orange-800',
   };
 
   return (
@@ -353,6 +368,7 @@ function AppointmentCard({
               {appointment.status === 'confirmed' && 'Bestätigt'}
               {appointment.status === 'rejected' && 'Abgelehnt'}
               {appointment.status === 'completed' && 'Abgeschlossen'}
+              {appointment.status === 'cancelled' && 'Storniert'}
             </span>
           </div>
           <div className="space-y-1 text-sm text-gray-600">
@@ -406,6 +422,18 @@ function AppointmentCard({
                 Ablehnen
               </button>
             </>
+          )}
+          {(appointment.status === 'confirmed' || appointment.status === 'pending') && (
+            <button
+              onClick={() => {
+                if (confirm(`Möchtest du den Termin für ${appointment.customerName} wirklich stornieren?`)) {
+                  onStatusChange('cancelled');
+                }
+              }}
+              className="px-3 py-1 text-xs bg-orange-600 text-white hover:bg-orange-700 transition-colors"
+            >
+              Stornieren
+            </button>
           )}
         </div>
       </div>

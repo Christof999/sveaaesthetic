@@ -10,15 +10,36 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "demo"
 };
 
-// Initialize Firebase only if not already initialized
-let app: FirebaseApp;
-if (getApps().length === 0) {
-  app = initializeApp(firebaseConfig);
+// Prüfe ob Firebase richtig konfiguriert ist
+const isFirebaseConfigured = 
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY && 
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== "demo" &&
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== "demo";
+
+// Initialize Firebase only if properly configured and not already initialized
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
+
+if (isFirebaseConfigured) {
+  try {
+    if (getApps().length === 0) {
+      app = initializeApp(firebaseConfig);
+    } else {
+      app = getApps()[0];
+    }
+    db = getFirestore(app);
+  } catch (error) {
+    console.error('Firebase initialization error:', error);
+    console.log('Firebase nicht konfiguriert - verwende Fallback-Modus');
+  }
 } else {
-  app = getApps()[0];
+  console.log('Firebase nicht konfiguriert - verwende Fallback-Modus');
+  console.log('Bitte setze die Firebase-Umgebungsvariablen in .env.local (siehe FIREBASE_SETUP.md)');
 }
 
-export const db: Firestore = getFirestore(app);
+// Exportiere db nur wenn Firebase initialisiert wurde
+export { db };
 
 // Storage is optional - only load if available
 let storage: any = null;

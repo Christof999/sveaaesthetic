@@ -5,7 +5,7 @@ export interface Customer {
   phone?: string; // Optional: Telefonnummer für SMS-Benachrichtigungen
 }
 
-export type AppointmentStatus = 'pending' | 'confirmed' | 'rejected' | 'completed';
+export type AppointmentStatus = 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled';
 
 export interface Appointment {
   id: string;

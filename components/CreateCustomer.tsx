@@ -124,23 +124,51 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
                     <p className="text-sm text-gray-500 mt-1">{customer.email}</p>
                   )}
                 </div>
-                <button
-                  onClick={async () => {
-                    const response = await fetch(`/api/qrcode/${customer.id}?name=${encodeURIComponent(customer.name)}`);
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${customer.name}-QRCode.html`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                  }}
-                  className="px-4 py-2 bg-gray-800 text-white hover:bg-gray-700 transition-colors text-sm"
-                >
-                  QR Code generieren
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={async () => {
+                      const response = await fetch(`/api/qrcode/${customer.id}?name=${encodeURIComponent(customer.name)}`);
+                      const blob = await response.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${customer.name}-QRCode.html`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      document.body.removeChild(a);
+                    }}
+                    className="px-4 py-2 bg-gray-800 text-white hover:bg-gray-700 transition-colors text-sm"
+                  >
+                    QR Code generieren
+                  </button>
+                  <button
+                    onClick={async () => {
+                      if (!confirm(`Möchtest du die Kundin "${customer.name}" wirklich löschen? Sie kann danach keine neuen Termine mehr buchen.`)) {
+                        return;
+                      }
+                      
+                      try {
+                        const response = await fetch(`/api/customers/${customer.id}`, {
+                          method: 'DELETE',
+                        });
+                        
+                        if (!response.ok) {
+                          throw new Error('Fehler beim Löschen der Kundin');
+                        }
+                        
+                        await fetchCustomers(); // Liste aktualisieren
+                        alert('Kundin erfolgreich gelöscht');
+                      } catch (err) {
+                        console.error('Error deleting customer:', err);
+                        alert('Fehler beim Löschen der Kundin: ' + (err instanceof Error ? err.message : 'Unbekannter Fehler'));
+                      }
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors text-sm"
+                  >
+                    Löschen
+                  </button>
+                </div>
               </div>
             ))}
           </div>

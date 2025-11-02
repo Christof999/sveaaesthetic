@@ -14,7 +14,7 @@ interface NotificationEmailProps {
   customerName: string;
   date: string;
   time: string;
-  status: 'confirmed' | 'rejected';
+  status: 'confirmed' | 'rejected' | 'cancelled';
   comment?: string;
 }
 
@@ -34,9 +34,17 @@ export async function sendAppointmentNotification({
 
   try {
     const isConfirmed = status === 'confirmed';
-    const subject = isConfirmed 
-      ? `✅ Termin bestätigt - ${date} um ${time} Uhr`
-      : `❌ Termin leider nicht möglich`;
+    const isCancelled = status === 'cancelled';
+    const isRejected = status === 'rejected';
+    
+    let subject: string;
+    if (isConfirmed) {
+      subject = `✅ Termin bestätigt - ${date} um ${time} Uhr`;
+    } else if (isCancelled) {
+      subject = `🚫 Termin storniert - ${date} um ${time} Uhr`;
+    } else {
+      subject = `❌ Termin leider nicht möglich`;
+    }
 
     const htmlContent = `
       <!DOCTYPE html>
@@ -94,6 +102,10 @@ export async function sendAppointmentNotification({
               background: #fee2e2;
               color: #991b1b;
             }
+            .status-cancelled {
+              background: #fef3c7;
+              color: #92400e;
+            }
             .footer {
               margin-top: 40px;
               padding-top: 20px;
@@ -116,13 +128,16 @@ export async function sendAppointmentNotification({
             ${isConfirmed 
               ? `<p>dein Termin wurde <strong>bestätigt</strong>! 🎉</p>
                  <p>Wir freuen uns, dich zu sehen.</p>`
+              : isCancelled
+              ? `<p>dein Termin wurde <strong>storniert</strong>.</p>
+                 <p>Falls du einen neuen Termin wünschst, kannst du jederzeit über deine persönliche Buchungsseite einen neuen Termin buchen.</p>`
               : `<p>leider können wir deinen Termin an diesem Tag nicht wahrnehmen.</p>
                  <p>Bitte buche einen anderen Termin über deine persönliche Buchungsseite.</p>`
             }
             
             <div class="appointment-details">
               <span class="status-badge status-${status}">
-                ${isConfirmed ? '✅ Bestätigt' : '❌ Nicht möglich'}
+                ${isConfirmed ? '✅ Bestätigt' : isCancelled ? '🚫 Storniert' : '❌ Nicht möglich'}
               </span>
               <p><strong>Datum:</strong> ${new Date(date).toLocaleDateString('de-DE', {
                 weekday: 'long',
@@ -136,6 +151,8 @@ export async function sendAppointmentNotification({
             
             ${isConfirmed 
               ? '<p>Bitte sei pünktlich. Wir freuen uns auf dich!</p>'
+              : isCancelled
+              ? '<p>Du kannst jederzeit einen neuen Termin über deine Buchungsseite vereinbaren.</p>'
               : '<p>Du kannst jederzeit einen neuen Termin über deine Buchungsseite vereinbaren.</p>'
             }
           </div>
