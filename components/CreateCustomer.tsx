@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Customer } from '@/types';
+import CustomerDetailView from './CustomerDetailView';
 
 interface CreateCustomerProps {
   onSuccess?: () => void;
@@ -13,6 +14,7 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   useEffect(() => {
     fetchCustomers();
@@ -118,8 +120,13 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
                 key={customer.id}
                 className="border border-gray-200 p-4 hover:border-gray-300 transition-colors flex items-center justify-between"
               >
-                <div>
-                  <p className="text-gray-800 font-medium">{customer.name}</p>
+                <div className="flex-1">
+                  <button
+                    onClick={() => setSelectedCustomer(customer)}
+                    className="text-gray-800 font-medium hover:text-gray-600 transition-colors text-left"
+                  >
+                    {customer.name}
+                  </button>
                   {customer.email && (
                     <p className="text-sm text-gray-500 mt-1">{customer.email}</p>
                   )}
@@ -174,6 +181,14 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
           </div>
         )}
       </div>
+
+      {/* Customer Detail Modal */}
+      {selectedCustomer && (
+        <CustomerDetailView
+          customer={selectedCustomer}
+          onClose={() => setSelectedCustomer(null)}
+        />
+      )}
     </div>
   );
 }

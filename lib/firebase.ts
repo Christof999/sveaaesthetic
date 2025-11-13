@@ -25,16 +25,22 @@ if (isFirebaseConfigured) {
   try {
     if (getApps().length === 0) {
       app = initializeApp(firebaseConfig);
+      console.log('Firebase initialized successfully');
+      console.log('Project ID:', firebaseConfig.projectId);
     } else {
       app = getApps()[0];
+      console.log('Firebase app already initialized');
     }
     db = getFirestore(app);
+    console.log('Firestore database connected');
   } catch (error) {
     console.error('Firebase initialization error:', error);
     console.log('Firebase nicht konfiguriert - verwende Fallback-Modus');
   }
 } else {
   console.log('Firebase nicht konfiguriert - verwende Fallback-Modus');
+  console.log('API Key vorhanden:', !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY);
+  console.log('Project ID vorhanden:', !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
   console.log('Bitte setze die Firebase-Umgebungsvariablen in .env.local (siehe FIREBASE_SETUP.md)');
 }
 

@@ -8,6 +8,15 @@ let inMemoryAppointments: Appointment[] = [];
 
 const useFirebase = db !== null;
 
+// Log Firebase status beim Start
+if (typeof window === 'undefined') { // Nur auf Server-Seite
+  console.log('Storage Service initialized');
+  console.log('Using Firebase:', useFirebase);
+  if (!useFirebase) {
+    console.log('WARNING: Firebase not available - using in-memory storage');
+  }
+}
+
 export const StorageService = {
   // Customers
   async getCustomers(): Promise<Customer[]> {
@@ -155,16 +164,29 @@ export const StorageService = {
     
     try {
       const appointmentsRef = collection(db!, 'appointments');
-      // Nur nach Datum sortieren (vereinfacht, um Index zu vermeiden)
-      const q = query(appointmentsRef, orderBy('date'));
-      const snapshot = await getDocs(q);
-      const appointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Appointment));
-      // In-Memory nach Zeit sortieren
-      return appointments.sort((a, b) => {
-        const dateTimeA = `${a.date}T${a.time}`;
-        const dateTimeB = `${b.date}T${b.time}`;
-        return dateTimeA.localeCompare(dateTimeB);
-      });
+      // Versuche zuerst mit orderBy, falls Index vorhanden ist
+      try {
+        const q = query(appointmentsRef, orderBy('date'));
+        const snapshot = await getDocs(q);
+        const appointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Appointment));
+        // In-Memory nach Zeit sortieren
+        return appointments.sort((a, b) => {
+          const dateTimeA = `${a.date}T${a.time}`;
+          const dateTimeB = `${b.date}T${b.time}`;
+          return dateTimeA.localeCompare(dateTimeB);
+        });
+      } catch (orderByError: any) {
+        // Falls orderBy fehlschlägt (z.B. fehlender Index), hole alle ohne Sortierung
+        console.log('orderBy failed, fetching all appointments without sort:', orderByError.message);
+        const snapshot = await getDocs(appointmentsRef);
+        const appointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Appointment));
+        // Sortiere im Code
+        return appointments.sort((a, b) => {
+          const dateTimeA = `${a.date}T${a.time}`;
+          const dateTimeB = `${b.date}T${b.time}`;
+          return dateTimeA.localeCompare(dateTimeB);
+        });
+      }
     } catch (error) {
       console.error('Error fetching appointments:', error);
       // Fallback auf In-Memory

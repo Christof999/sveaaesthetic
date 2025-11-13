@@ -4,10 +4,16 @@ import { Customer } from '@/types';
 
 export async function GET() {
   try {
+    console.log('API: Fetching customers...');
     const customers = await StorageService.getCustomers();
+    console.log(`API: Found ${customers.length} customers`);
     return NextResponse.json({ customers });
   } catch (error) {
-    return NextResponse.json({ error: 'Fehler beim Laden der Kunden' }, { status: 500 });
+    console.error('API: Error fetching customers:', error);
+    return NextResponse.json({ 
+      error: 'Fehler beim Laden der Kunden',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 }
 

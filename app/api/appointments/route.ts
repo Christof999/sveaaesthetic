@@ -4,7 +4,9 @@ import { Appointment } from '@/types';
 
 export async function GET() {
   try {
+    console.log('API: Fetching appointments...');
     const appointments = await StorageService.getAppointments();
+    console.log(`API: Found ${appointments.length} appointments`);
     // Migriere alte Termine: Wenn kein Status vorhanden, setze auf 'confirmed'
     const migratedAppointments = appointments.map(apt => ({
       ...apt,
@@ -15,7 +17,11 @@ export async function GET() {
     }));
     return NextResponse.json({ appointments: migratedAppointments });
   } catch (error) {
-    return NextResponse.json({ error: 'Fehler beim Laden der Termine' }, { status: 500 });
+    console.error('API: Error fetching appointments:', error);
+    return NextResponse.json({ 
+      error: 'Fehler beim Laden der Termine',
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 }
 
