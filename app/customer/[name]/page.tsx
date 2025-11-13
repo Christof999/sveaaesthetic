@@ -128,13 +128,13 @@ export default function CustomerPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <h1 className="text-2xl font-light text-gray-600">
             Hallo {decodedName}!
           </h1>
           <a
             href={`/book/${encodeURIComponent(decodedName)}`}
-            className="px-4 py-2 bg-gray-800 text-white hover:bg-gray-700 transition-colors text-sm"
+            className="px-4 py-2 bg-gray-800 text-white hover:bg-gray-700 transition-colors text-sm text-center rounded"
           >
             Neuen Termin buchen
           </a>
@@ -151,26 +151,26 @@ export default function CustomerPage() {
         )}
 
         {/* Tabs */}
-        <div className="flex gap-4 border-b border-gray-200 mb-6">
+        <div className="flex gap-2 sm:gap-4 border-b border-gray-200 mb-6 overflow-x-auto">
           <button
             onClick={() => setActiveTab('upcoming')}
-            className={`pb-2 px-4 ${
+            className={`pb-2 px-2 sm:px-4 whitespace-nowrap text-sm sm:text-base ${
               activeTab === 'upcoming'
                 ? 'border-b-2 border-gray-800 text-gray-800'
                 : 'text-gray-500 hover:text-gray-700'
             } transition-colors`}
           >
-            Anstehende Termine ({upcomingAppointments.length})
+            Anstehende ({upcomingAppointments.length})
           </button>
           <button
             onClick={() => setActiveTab('backlog')}
-            className={`pb-2 px-4 ${
+            className={`pb-2 px-2 sm:px-4 whitespace-nowrap text-sm sm:text-base ${
               activeTab === 'backlog'
                 ? 'border-b-2 border-gray-800 text-gray-800'
                 : 'text-gray-500 hover:text-gray-700'
             } transition-colors`}
           >
-            Vergangene Termine ({backlogAppointments.length})
+            Vergangene ({backlogAppointments.length})
           </button>
         </div>
 
@@ -240,11 +240,11 @@ function AppointmentCard({
                     (appointment.status === 'confirmed' || appointment.status === 'pending');
 
   return (
-    <div className="border border-gray-200 p-6 rounded hover:border-gray-300 transition-colors">
-      <div className="flex items-start justify-between">
+    <div className="border border-gray-200 p-4 sm:p-6 rounded hover:border-gray-300 transition-colors">
+      <div className="flex flex-col">
         <div className="flex-1">
-          <div className="flex items-center gap-3 mb-3">
-            <h3 className="text-lg font-medium text-gray-800">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
+            <h3 className="text-base sm:text-lg font-medium text-gray-800">
               {new Date(appointment.date).toLocaleDateString('de-DE', {
                 weekday: 'long',
                 year: 'numeric',
@@ -274,7 +274,7 @@ function AppointmentCard({
               <img
                 src={appointment.imageUrl}
                 alt="Inspo"
-                className="max-w-xs h-auto border border-gray-200 rounded"
+                className="max-w-full sm:max-w-xs h-auto border border-gray-200 rounded"
               />
             </div>
           )}
@@ -283,7 +283,7 @@ function AppointmentCard({
           <div className="mt-4 pt-4 border-t border-gray-200">
             <button
               onClick={() => onCancel(appointment.id)}
-              className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors text-sm"
+              className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors text-sm rounded"
             >
               Termin stornieren
             </button>

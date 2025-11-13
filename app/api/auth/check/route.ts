@@ -45,8 +45,10 @@ export async function GET(request: NextRequest) {
       const decodedToken = await adminAuth.verifyIdToken(token);
       
       // Prüfe ob E-Mail eine Admin-E-Mail ist
-      const adminEmails = [
-        'admin@sveaaesthetic.de', // Ersetze mit deiner Admin-E-Mail
+      // Verwende die gleiche Liste wie in lib/auth.ts
+      const adminEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',').map(e => e.trim()) || [
+        'christof.didi@googlemail.com', // Haupt-Admin
+        'admin@sveaaesthetic.de', // Fallback
       ];
       
       const isAdmin = adminEmails.some(
