@@ -5,26 +5,43 @@ import { useRouter } from 'next/navigation';
 import AdminOverview from '@/components/AdminOverview';
 import CalendarView from '@/components/CalendarView';
 import CreateCustomer from '@/components/CreateCustomer';
+import { useAuth } from '@/hooks/useAuth';
+import { logout } from '@/lib/auth';
 
 export default function AdminPage() {
   const router = useRouter();
+  const { user, loading } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'customer'>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    // Einfache Authentifizierungsprüfung
-    if (typeof window !== 'undefined') {
-      const isAdmin = sessionStorage.getItem('isAdmin');
-      if (!isAdmin) {
-        router.push('/admin/login');
-      }
+    if (!loading && !user) {
+      router.push('/admin/login');
     }
-  }, [router]);
+  }, [user, loading, router]);
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('isAdmin');
-    router.push('/admin/login');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/admin/login');
+    } catch (error) {
+      console.error('Fehler beim Abmelden:', error);
+      // Fallback: Auch ohne Firebase Auth abmelden
+      router.push('/admin/login');
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-gray-500">Lädt...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Wird zu Login weitergeleitet
+  }
 
   const handleTabChange = (tab: 'overview' | 'calendar' | 'customer') => {
     setActiveTab(tab);
@@ -36,7 +53,14 @@ export default function AdminPage() {
       <nav className="border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-light text-gray-600">SVEAAESTHETIC</h1>
+            <div className="flex items-center gap-4">
+              <h1 className="text-xl font-light text-gray-600">SVEAAESTHETIC</h1>
+              {user && (
+                <span className="text-xs text-gray-500 hidden md:inline">
+                  {user.email}
+                </span>
+              )}
+            </div>
             
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">

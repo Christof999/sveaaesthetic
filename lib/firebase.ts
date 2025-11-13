@@ -1,5 +1,6 @@
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAuth, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "demo",
@@ -20,6 +21,7 @@ const isFirebaseConfigured =
 // Initialize Firebase only if properly configured and not already initialized
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
+let auth: Auth | null = null;
 
 if (isFirebaseConfigured) {
   try {
@@ -32,7 +34,9 @@ if (isFirebaseConfigured) {
       console.log('Firebase app already initialized');
     }
     db = getFirestore(app);
+    auth = getAuth(app);
     console.log('Firestore database connected');
+    console.log('Firebase Auth initialized');
   } catch (error) {
     console.error('Firebase initialization error:', error);
     console.log('Firebase nicht konfiguriert - verwende Fallback-Modus');
@@ -44,8 +48,8 @@ if (isFirebaseConfigured) {
   console.log('Bitte setze die Firebase-Umgebungsvariablen in .env.local (siehe FIREBASE_SETUP.md)');
 }
 
-// Exportiere db nur wenn Firebase initialisiert wurde
-export { db };
+// Exportiere db und auth nur wenn Firebase initialisiert wurde
+export { db, auth };
 
 // Storage is optional - only load if available
 let storage: any = null;
