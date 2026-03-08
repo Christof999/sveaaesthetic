@@ -106,32 +106,39 @@ export default function CalendarView() {
   const selectedAppointments = selectedDate ? appointmentsByDate[selectedDate] || [] : [];
 
   if (loading) {
-    return <div className="text-gray-500">Lädt...</div>;
+    return (
+      <div className="flex flex-col items-center gap-3 py-12">
+        <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+        <span className="text-[var(--muted)] text-sm">Lädt...</span>
+      </div>
+    );
   }
 
   return (
     <div>
       {/* Header mit Navigation */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-light text-gray-700">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <h2 className="text-xl font-medium text-[var(--foreground)]">
           {currentDate.toLocaleDateString('de-DE', { month: 'long', year: 'numeric' })}
         </h2>
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigateMonth('prev')}
-            className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+            className="p-2 text-[var(--foreground)] hover:bg-[var(--card-border)]/50 rounded-xl transition-colors"
+            aria-label="Vorheriger Monat"
           >
             ←
           </button>
           <button
             onClick={goToToday}
-            className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[var(--foreground)] hover:bg-[var(--card-border)]/50 rounded-xl transition-colors"
           >
             Heute
           </button>
           <button
             onClick={() => navigateMonth('next')}
-            className="px-3 py-1 text-gray-600 hover:bg-gray-100 rounded transition-colors"
+            className="p-2 text-[var(--foreground)] hover:bg-[var(--card-border)]/50 rounded-xl transition-colors"
+            aria-label="Nächster Monat"
           >
             →
           </button>
@@ -139,13 +146,13 @@ export default function CalendarView() {
       </div>
 
       {/* Kalender Grid */}
-      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+      <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl overflow-hidden shadow-sm">
         {/* Wochentags-Header */}
-        <div className="grid grid-cols-7 border-b border-gray-200">
+        <div className="grid grid-cols-7 border-b border-[var(--card-border)]">
           {weekDays.map((day) => (
             <div
               key={day}
-              className="p-3 text-center text-sm font-medium text-gray-600 bg-gray-50"
+              className="p-3 text-center text-sm font-medium text-[var(--muted)] bg-[var(--background)]"
             >
               {day}
             </div>
@@ -156,7 +163,7 @@ export default function CalendarView() {
         <div className="grid grid-cols-7">
           {calendarDays.map((day, index) => {
             if (day === null) {
-              return <div key={`empty-${index}`} className="aspect-square border-r border-b border-gray-100" />;
+              return <div key={`empty-${index}`} className="aspect-square border-r border-b border-[var(--card-border)]/50" />;
             }
 
             const dayAppointments = getAppointmentsForDay(day);
@@ -170,10 +177,10 @@ export default function CalendarView() {
                 key={day}
                 onClick={() => setSelectedDate(dateKey)}
                 className={`
-                  aspect-square border-r border-b border-gray-100 p-2 cursor-pointer
-                  transition-colors hover:bg-gray-50
-                  ${isSelected ? 'bg-blue-50 border-blue-300' : ''}
-                  ${isTodayDate ? 'bg-blue-100/30' : ''}
+                  aspect-square border-r border-b border-[var(--card-border)]/50 p-2 cursor-pointer
+                  transition-colors hover:bg-[var(--background)]
+                  ${isSelected ? 'bg-[var(--accent)]/10 ring-1 ring-[var(--accent)]/30' : ''}
+                  ${isTodayDate && !isSelected ? 'bg-[var(--accent)]/5' : ''}
                   ${isPastDate ? 'opacity-50' : ''}
                 `}
               >
@@ -181,8 +188,8 @@ export default function CalendarView() {
                   <div
                     className={`
                       text-sm font-medium mb-1
-                      ${isTodayDate ? 'text-blue-600' : 'text-gray-700'}
-                      ${isSelected ? 'text-blue-700' : ''}
+                      ${isTodayDate ? 'text-[var(--accent)]' : 'text-[var(--foreground)]'}
+                      ${isSelected ? 'text-[var(--accent)] font-semibold' : ''}
                     `}
                   >
                     {day}
@@ -228,8 +235,8 @@ export default function CalendarView() {
 
       {/* Detaillierte Ansicht für ausgewählten Tag */}
       {selectedDate && selectedAppointments.length > 0 && (
-        <div className="mt-6 border border-gray-200 rounded-lg p-6 bg-gray-50">
-          <h3 className="text-lg font-medium text-gray-700 mb-4">
+        <div className="mt-6 border border-[var(--card-border)] rounded-2xl p-6 bg-[var(--card-bg)] shadow-sm">
+          <h3 className="text-lg font-medium text-[var(--foreground)] mb-4">
             {new Date(selectedDate).toLocaleDateString('de-DE', {
               weekday: 'long',
               year: 'numeric',
@@ -244,12 +251,12 @@ export default function CalendarView() {
                 <div
                   key={appointment.id}
                   onClick={() => setSelectedAppointment(appointment)}
-                  className="bg-white border border-gray-200 p-4 rounded-lg hover:border-gray-300 transition-colors cursor-pointer"
+                  className="bg-[var(--card-bg)] border border-[var(--card-border)] p-4 rounded-xl hover:shadow-sm transition-all cursor-pointer"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <p className="font-medium text-gray-800">{appointment.customerName}</p>
+                        <p className="font-medium text-[var(--foreground)]">{appointment.customerName}</p>
                         <span
                           className={`
                             text-xs px-2 py-1 rounded
@@ -266,7 +273,7 @@ export default function CalendarView() {
                            appointment.status === 'completed' ? 'Abgeschlossen' : appointment.status}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">{appointment.time} Uhr</p>
+                      <p className="text-sm text-[var(--muted)] mb-2">{appointment.time} Uhr</p>
                       {appointment.comment && (
                         <p className="text-sm text-gray-500 italic mb-2 line-clamp-2">{appointment.comment}</p>
                       )}
@@ -288,7 +295,7 @@ export default function CalendarView() {
       )}
 
       {selectedDate && selectedAppointments.length === 0 && (
-        <div className="mt-6 border border-gray-200 rounded-lg p-6 bg-gray-50 text-center text-gray-500">
+        <div className="mt-6 border border-[var(--card-border)] rounded-2xl p-6 bg-[var(--card-bg)] text-center text-[var(--muted)] shadow-sm">
           Keine Termine an diesem Tag
         </div>
       )}
@@ -296,18 +303,19 @@ export default function CalendarView() {
       {/* Modal für Termin-Details */}
       {selectedAppointment && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
           onClick={() => setSelectedAppointment(null)}
         >
           <div
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
+            className="bg-[var(--card-bg)] rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-xl font-medium text-gray-800">Termin-Details</h2>
+            <div className="sticky top-0 bg-[var(--card-bg)] border-b border-[var(--card-border)] px-6 py-4 flex items-center justify-between rounded-t-2xl">
+              <h2 className="text-xl font-medium text-[var(--foreground)]">Termin-Details</h2>
               <button
                 onClick={() => setSelectedAppointment(null)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="p-2 text-[var(--muted)] hover:text-[var(--foreground)] hover:bg-[var(--card-border)]/50 rounded-xl transition-colors"
+                aria-label="Schließen"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -318,15 +326,15 @@ export default function CalendarView() {
             <div className="p-6 space-y-6">
               {/* Kundin */}
               <div>
-                <label className="text-sm font-medium text-gray-500 block mb-1">Kundin</label>
-                <p className="text-lg text-gray-800">{selectedAppointment.customerName}</p>
+                <label className="text-sm font-medium text-[var(--muted)] block mb-1">Kundin</label>
+                <p className="text-lg text-[var(--foreground)]">{selectedAppointment.customerName}</p>
               </div>
 
               {/* Datum und Uhrzeit */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-500 block mb-1">Datum</label>
-                  <p className="text-gray-800">
+                  <label className="text-sm font-medium text-[var(--muted)] block mb-1">Datum</label>
+                  <p className="text-[var(--foreground)]">
                     {new Date(selectedAppointment.date).toLocaleDateString('de-DE', {
                       weekday: 'long',
                       year: 'numeric',
@@ -336,8 +344,8 @@ export default function CalendarView() {
                   </p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-500 block mb-1">Uhrzeit</label>
-                  <p className="text-gray-800">{selectedAppointment.time} Uhr</p>
+                  <label className="text-sm font-medium text-[var(--muted)] block mb-1">Uhrzeit</label>
+                  <p className="text-[var(--foreground)]">{selectedAppointment.time} Uhr</p>
                 </div>
               </div>
 
@@ -366,8 +374,8 @@ export default function CalendarView() {
               {/* Kommentar */}
               {selectedAppointment.comment && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 block mb-1">Kommentar / Notizen</label>
-                  <p className="text-gray-800 whitespace-pre-wrap bg-gray-50 p-3 rounded border border-gray-200">
+                  <label className="text-sm font-medium text-[var(--muted)] block mb-1">Kommentar / Notizen</label>
+                  <p className="text-[var(--foreground)] whitespace-pre-wrap bg-[var(--background)] p-3 rounded-xl border border-[var(--card-border)]">
                     {selectedAppointment.comment}
                   </p>
                 </div>
@@ -376,23 +384,23 @@ export default function CalendarView() {
               {/* Bild */}
               {selectedAppointment.imageUrl && (
                 <div>
-                  <label className="text-sm font-medium text-gray-500 block mb-2">Inspirationsbild</label>
-                  <div className="bg-gray-50 p-4 rounded border border-gray-200">
+                  <label className="text-sm font-medium text-[var(--muted)] block mb-2">Inspirationsbild</label>
+                  <div className="bg-[var(--background)] p-4 rounded-xl border border-[var(--card-border)]">
                     <img
                       src={selectedAppointment.imageUrl}
                       alt="Inspirationsbild"
-                      className="max-w-full h-auto rounded border border-gray-200"
+                      className="max-w-full h-auto rounded-xl border border-[var(--card-border)]"
                     />
                   </div>
                 </div>
               )}
 
               {/* Zusätzliche Informationen */}
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-[var(--card-border)]">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <label className="text-gray-500 block mb-1">Erstellt am</label>
-                    <p className="text-gray-800">
+                    <label className="text-[var(--muted)] block mb-1">Erstellt am</label>
+                    <p className="text-[var(--foreground)]">
                       {selectedAppointment.createdAt
                         ? new Date(selectedAppointment.createdAt).toLocaleDateString('de-DE', {
                             year: 'numeric',
@@ -406,8 +414,8 @@ export default function CalendarView() {
                   </div>
                   {selectedAppointment.confirmedByCustomer !== undefined && (
                     <div>
-                      <label className="text-gray-500 block mb-1">Von Kundin bestätigt</label>
-                      <p className="text-gray-800">
+                      <label className="text-[var(--muted)] block mb-1">Von Kundin bestätigt</label>
+                      <p className="text-[var(--foreground)]">
                         {selectedAppointment.confirmedByCustomer ? 'Ja' : 'Nein'}
                       </p>
                     </div>

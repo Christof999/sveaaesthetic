@@ -70,68 +70,71 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
     }
   };
 
+  const inputClass =
+    'w-full px-4 py-3 border border-[var(--card-border)] rounded-xl bg-[var(--card-bg)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/30 focus:border-[var(--accent)] transition-colors';
+
   return (
     <div className="space-y-6">
-      <div className="border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-700 mb-4">Neue Kundin anlegen</h3>
+      <div className="border border-[var(--card-border)] rounded-2xl p-6 bg-[var(--card-bg)] shadow-sm">
+        <h3 className="text-lg font-medium text-[var(--foreground)] mb-4">Neue Kundin anlegen</h3>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm text-gray-600 mb-2">Name</label>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-gray-400"
+              className={inputClass}
               placeholder="Name der Kundin"
               required
             />
           </div>
           <div>
-            <label className="block text-sm text-gray-600 mb-2">
-              E-Mail <span className="text-gray-400 text-xs">(optional - für Benachrichtigungen)</span>
+            <label className="block text-sm font-medium text-[var(--foreground)] mb-2">
+              E-Mail <span className="text-[var(--muted)] text-xs font-normal">(optional - für Benachrichtigungen)</span>
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 focus:outline-none focus:border-gray-400"
-              placeholder="kundin@example.com"
+              className={inputClass}
+              placeholder="kundin@beispiel.de"
             />
           </div>
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-600 text-sm bg-red-50 px-4 py-2 rounded-xl">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-2 bg-gray-800 text-white hover:bg-gray-700 transition-colors disabled:opacity-50"
+            className="px-6 py-3 bg-[var(--accent)] text-white font-medium rounded-xl hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50 shadow-sm"
           >
             {loading ? 'Wird erstellt...' : 'Kundin anlegen'}
           </button>
         </form>
       </div>
 
-      <div className="border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-700 mb-4">Bestehende Kundinnen</h3>
+      <div className="border border-[var(--card-border)] rounded-2xl p-6 bg-[var(--card-bg)] shadow-sm">
+        <h3 className="text-lg font-medium text-[var(--foreground)] mb-4">Bestehende Kundinnen</h3>
         {customers.length === 0 ? (
-          <p className="text-gray-400">Noch keine Kundinnen angelegt</p>
+          <p className="text-[var(--muted)] py-4">Noch keine Kundinnen angelegt</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {customers.map((customer) => (
               <div
                 key={customer.id}
-                className="border border-gray-200 p-4 hover:border-gray-300 transition-colors flex items-center justify-between"
+                className="border border-[var(--card-border)] p-4 rounded-xl hover:shadow-sm transition-all flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
               >
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <button
                     onClick={() => setSelectedCustomer(customer)}
-                    className="text-gray-800 font-medium hover:text-gray-600 transition-colors text-left"
+                    className="text-[var(--foreground)] font-medium hover:text-[var(--accent)] transition-colors text-left"
                   >
                     {customer.name}
                   </button>
                   {customer.email && (
-                    <p className="text-sm text-gray-500 mt-1">{customer.email}</p>
+                    <p className="text-sm text-[var(--muted)] mt-1 truncate">{customer.email}</p>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 shrink-0">
                   <button
                     onClick={async () => {
                       const response = await fetch(`/api/qrcode/${customer.id}?name=${encodeURIComponent(customer.name)}`);
@@ -145,7 +148,7 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
                       window.URL.revokeObjectURL(url);
                       document.body.removeChild(a);
                     }}
-                    className="px-4 py-2 bg-gray-800 text-white hover:bg-gray-700 transition-colors text-sm"
+                    className="px-4 py-2 bg-[var(--accent)] text-white font-medium hover:bg-[var(--accent-hover)] rounded-xl transition-colors text-sm shadow-sm"
                   >
                     QR Code generieren
                   </button>
@@ -164,14 +167,14 @@ export default function CreateCustomer({ onSuccess }: CreateCustomerProps) {
                           throw new Error('Fehler beim Löschen der Kundin');
                         }
                         
-                        await fetchCustomers(); // Liste aktualisieren
+                        await fetchCustomers();
                         alert('Kundin erfolgreich gelöscht');
                       } catch (err) {
                         console.error('Error deleting customer:', err);
                         alert('Fehler beim Löschen der Kundin: ' + (err instanceof Error ? err.message : 'Unbekannter Fehler'));
                       }
                     }}
-                    className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 transition-colors text-sm"
+                    className="px-4 py-2 bg-red-600 text-white font-medium hover:bg-red-700 rounded-xl transition-colors text-sm"
                   >
                     Löschen
                   </button>

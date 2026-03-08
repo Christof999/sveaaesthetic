@@ -26,77 +26,67 @@ export default function AdminPage() {
       router.push('/admin/login');
     } catch (error) {
       console.error('Fehler beim Abmelden:', error);
-      // Fallback: Auch ohne Firebase Auth abmelden
       router.push('/admin/login');
     }
   };
 
+  const handleTabChange = (tab: 'overview' | 'calendar' | 'customer') => {
+    setActiveTab(tab);
+    setIsMobileMenuOpen(false);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-gray-500">Lädt...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+          <span className="text-[var(--muted)] text-sm">Lädt...</span>
+        </div>
       </div>
     );
   }
 
   if (!user) {
-    return null; // Wird zu Login weitergeleitet
+    return null;
   }
 
-  const handleTabChange = (tab: 'overview' | 'calendar' | 'customer') => {
-    setActiveTab(tab);
-    setIsMobileMenuOpen(false); // Schließe Menü nach Auswahl auf Mobile
-  };
+  const tabStyle = (active: boolean) =>
+    `text-sm font-medium pb-2 transition-colors ${
+      active
+        ? 'text-[var(--foreground)] border-b-2 border-[var(--accent)]'
+        : 'text-[var(--muted)] hover:text-[var(--foreground)]'
+    }`;
 
   return (
-    <div className="min-h-screen bg-white">
-      <nav className="border-b border-gray-200">
+    <div className="min-h-screen">
+      <nav className="bg-[var(--card-bg)] border-b border-[var(--card-border)] shadow-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <h1 className="text-xl font-light text-gray-600">SVEAAESTHETIC</h1>
+              <h1 className="text-xl font-medium text-[var(--foreground)] tracking-tight">
+                SVEAAESTHETIC
+              </h1>
               {user && (
-                <span className="text-xs text-gray-500 hidden md:inline">
+                <span className="text-xs text-[var(--muted)] hidden md:inline truncate max-w-[180px]">
                   {user.email}
                 </span>
               )}
             </div>
-            
+
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
-              <button
-                onClick={() => handleTabChange('overview')}
-                className={`text-sm ${
-                  activeTab === 'overview'
-                    ? 'text-gray-800 border-b-2 border-gray-800'
-                    : 'text-gray-500 hover:text-gray-700'
-                } pb-2 transition-colors`}
-              >
+              <button onClick={() => handleTabChange('overview')} className={tabStyle(activeTab === 'overview')}>
                 Übersicht
               </button>
-              <button
-                onClick={() => handleTabChange('calendar')}
-                className={`text-sm ${
-                  activeTab === 'calendar'
-                    ? 'text-gray-800 border-b-2 border-gray-800'
-                    : 'text-gray-500 hover:text-gray-700'
-                } pb-2 transition-colors`}
-              >
+              <button onClick={() => handleTabChange('calendar')} className={tabStyle(activeTab === 'calendar')}>
                 Kalender
               </button>
-              <button
-                onClick={() => handleTabChange('customer')}
-                className={`text-sm ${
-                  activeTab === 'customer'
-                    ? 'text-gray-800 border-b-2 border-gray-800'
-                    : 'text-gray-500 hover:text-gray-700'
-                } pb-2 transition-colors`}
-              >
+              <button onClick={() => handleTabChange('customer')} className={tabStyle(activeTab === 'customer')}>
                 Kundin anlegen
               </button>
               <button
                 onClick={handleLogout}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
               >
                 Abmelden
               </button>
@@ -105,22 +95,22 @@ export default function AdminPage() {
             {/* Mobile Burger Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden flex flex-col gap-1.5 p-2"
-              aria-label="Menu"
+              className="md:hidden flex flex-col justify-center gap-1.5 w-10 h-10 rounded-lg hover:bg-[var(--card-border)]/50 transition-colors"
+              aria-label={isMobileMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
             >
               <span
-                className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${
-                  isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
+                className={`block w-5 h-0.5 bg-[var(--foreground)] transition-all duration-300 origin-center ${
+                  isMobileMenuOpen ? 'rotate-45 translate-y-1' : ''
                 }`}
               />
               <span
-                className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${
-                  isMobileMenuOpen ? 'opacity-0' : 'opacity-100'
+                className={`block w-5 h-0.5 bg-[var(--foreground)] transition-all duration-300 ${
+                  isMobileMenuOpen ? 'opacity-0 scale-0' : 'opacity-100'
                 }`}
               />
               <span
-                className={`block w-6 h-0.5 bg-gray-600 transition-all duration-300 ${
-                  isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''
+                className={`block w-5 h-0.5 bg-[var(--foreground)] transition-all duration-300 origin-center ${
+                  isMobileMenuOpen ? '-rotate-45 -translate-y-1' : ''
                 }`}
               />
             </button>
@@ -133,40 +123,25 @@ export default function AdminPage() {
             isMobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="px-4 py-4 space-y-3 border-t border-gray-200 bg-white">
-            <button
-              onClick={() => handleTabChange('overview')}
-              className={`block w-full text-left px-4 py-3 rounded transition-colors ${
-                activeTab === 'overview'
-                  ? 'bg-gray-100 text-gray-800 font-medium'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              Übersicht
-            </button>
-            <button
-              onClick={() => handleTabChange('calendar')}
-              className={`block w-full text-left px-4 py-3 rounded transition-colors ${
-                activeTab === 'calendar'
-                  ? 'bg-gray-100 text-gray-800 font-medium'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              Kalender
-            </button>
-            <button
-              onClick={() => handleTabChange('customer')}
-              className={`block w-full text-left px-4 py-3 rounded transition-colors ${
-                activeTab === 'customer'
-                  ? 'bg-gray-100 text-gray-800 font-medium'
-                  : 'text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              Kundin anlegen
-            </button>
+          <div className="px-4 py-4 space-y-1 border-t border-[var(--card-border)] bg-[var(--card-bg)]">
+            {(['overview', 'calendar', 'customer'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                className={`block w-full text-left px-4 py-3 rounded-xl transition-colors ${
+                  activeTab === tab
+                    ? 'bg-[var(--accent)]/10 text-[var(--foreground)] font-medium'
+                    : 'text-[var(--muted)] hover:bg-[var(--card-border)]/50 hover:text-[var(--foreground)]'
+                }`}
+              >
+                {tab === 'overview' && 'Übersicht'}
+                {tab === 'calendar' && 'Kalender'}
+                {tab === 'customer' && 'Kundin anlegen'}
+              </button>
+            ))}
             <button
               onClick={handleLogout}
-              className="block w-full text-left px-4 py-3 text-gray-600 hover:bg-gray-50 rounded transition-colors"
+              className="block w-full text-left px-4 py-3 text-[var(--muted)] hover:bg-[var(--card-border)]/50 hover:text-[var(--foreground)] rounded-xl transition-colors"
             >
               Abmelden
             </button>

@@ -57,7 +57,8 @@ export default function AdminOverview() {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const endOfWeek = new Date(today);
-  endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Ende der Woche (Sonntag)
+  endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Sonntag
+  endOfWeek.setHours(23, 59, 59, 999); // Ganzes Wochenende inkl. Sonntag-Termine
 
   const lastLoginDate = lastLogin ? new Date(lastLogin) : null;
 
@@ -114,8 +115,15 @@ export default function AdminOverview() {
   };
 
   if (loading) {
-    return <div className="text-gray-500">Lädt...</div>;
+    return (
+      <div className="flex flex-col items-center gap-3 py-12">
+        <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+        <span className="text-[var(--muted)] text-sm">Lädt...</span>
+      </div>
+    );
   }
+
+  const sectionTitle = 'text-lg font-medium text-[var(--foreground)] mb-4';
 
   return (
     <div className="space-y-8">
@@ -124,22 +132,22 @@ export default function AdminOverview() {
         <StatCard
           label="Heute"
           value={stats.today}
-          color="bg-blue-50 border-blue-200 text-blue-700"
+          color="bg-blue-50/80 border-blue-200/60 text-blue-800"
         />
         <StatCard
           label="Diese Woche"
           value={stats.thisWeek}
-          color="bg-purple-50 border-purple-200 text-purple-700"
+          color="bg-violet-50/80 border-violet-200/60 text-violet-800"
         />
         <StatCard
           label="Ausstehend"
           value={stats.pending}
-          color="bg-yellow-50 border-yellow-200 text-yellow-700"
+          color="bg-amber-50/80 border-amber-200/60 text-amber-800"
         />
         <StatCard
           label="Neu"
           value={stats.new}
-          color="bg-red-50 border-red-200 text-red-700"
+          color="bg-rose-50/80 border-rose-200/60 text-rose-800"
           pulse={stats.new > 0}
         />
       </div>
@@ -147,8 +155,8 @@ export default function AdminOverview() {
       {/* Neue Termine */}
       {newAppointments.length > 0 && (
         <div>
-          <h2 className="text-xl font-light text-gray-700 mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+          <h2 className={`${sectionTitle} flex items-center gap-2`}>
+            <span className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" aria-hidden />
             Neue Termine ({newAppointments.length})
           </h2>
           <div className="space-y-4">
@@ -168,8 +176,8 @@ export default function AdminOverview() {
       {/* Termine heute */}
       {todayAppointments.length > 0 && (
         <div>
-          <h2 className="text-xl font-light text-gray-700 mb-4">
-            📅 Heute ({todayAppointments.length})
+          <h2 className={sectionTitle}>
+            Heute ({todayAppointments.length})
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
             {todayAppointments.map((appointment) => (
@@ -186,8 +194,8 @@ export default function AdminOverview() {
       {/* Diese Woche */}
       {thisWeekAppointments.length > 0 && (
         <div>
-          <h2 className="text-xl font-light text-gray-700 mb-4">
-            📆 Diese Woche ({thisWeekAppointments.length})
+          <h2 className={sectionTitle}>
+            Diese Woche ({thisWeekAppointments.length})
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {thisWeekAppointments.map((appointment) => (
@@ -204,8 +212,8 @@ export default function AdminOverview() {
       {/* Unbestätigte Termine */}
       {pendingAppointments.length > 0 && (
         <div>
-          <h2 className="text-xl font-light text-gray-700 mb-4">
-            ⏳ Unbestätigte Termine ({pendingAppointments.length})
+          <h2 className={sectionTitle}>
+            Unbestätigte Termine ({pendingAppointments.length})
           </h2>
           <div className="space-y-4">
             {pendingAppointments.map((appointment) => (
@@ -223,7 +231,7 @@ export default function AdminOverview() {
       {/* Alle nächsten Termine */}
       {confirmedUpcoming.length > 0 && (
         <div>
-          <h2 className="text-xl font-light text-gray-700 mb-6">Alle nächsten Termine</h2>
+          <h2 className={`${sectionTitle} mb-6`}>Alle nächsten Termine</h2>
           <div className="space-y-4">
             {confirmedUpcoming.map((appointment) => (
               <AppointmentCard
@@ -237,12 +245,12 @@ export default function AdminOverview() {
         </div>
       )}
 
-      {newAppointments.length === 0 && 
-       pendingAppointments.length === 0 && 
-       confirmedUpcoming.length === 0 && 
+      {newAppointments.length === 0 &&
+       pendingAppointments.length === 0 &&
+       confirmedUpcoming.length === 0 &&
        todayAppointments.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-400 text-lg">Keine Termine vorhanden</p>
+        <div className="text-center py-16 bg-[var(--card-bg)] rounded-2xl border border-[var(--card-border)]">
+          <p className="text-[var(--muted)] text-lg">Keine Termine vorhanden</p>
         </div>
       )}
     </div>
@@ -261,9 +269,12 @@ function StatCard({
   pulse?: boolean;
 }) {
   return (
-    <div className={`border rounded-lg p-4 ${color} ${pulse ? 'animate-pulse' : ''}`}>
-      <p className="text-sm font-medium mb-1">{label}</p>
-      <p className="text-3xl font-light">{value}</p>
+    <div className={`border rounded-xl p-5 shadow-sm transition-shadow hover:shadow ${color} relative overflow-hidden`}>
+      {pulse && (
+        <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" aria-hidden />
+      )}
+      <p className="text-sm font-medium mb-1 opacity-90">{label}</p>
+      <p className="text-3xl font-light tracking-tight">{value}</p>
     </div>
   );
 }
@@ -283,14 +294,16 @@ function CompactAppointmentCard({
 
   return (
     <div
-      className={`border p-4 rounded hover:border-gray-300 transition-colors ${
-        isToday() ? 'border-blue-300 bg-blue-50' : 'border-gray-200'
+      className={`border p-4 rounded-xl transition-all ${
+        isToday()
+          ? 'border-blue-300 bg-blue-50/50 shadow-sm'
+          : 'border-[var(--card-border)] bg-[var(--card-bg)] hover:shadow-sm'
       }`}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="font-medium text-gray-800 mb-1">{appointment.customerName}</h3>
-          <div className="space-y-1 text-xs text-gray-600">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-[var(--foreground)] mb-1 truncate">{appointment.customerName}</h3>
+          <div className="space-y-0.5 text-xs text-[var(--muted)]">
             <p>
               {new Date(appointment.date).toLocaleDateString('de-DE', {
                 weekday: 'short',
@@ -298,29 +311,29 @@ function CompactAppointmentCard({
                 month: 'short',
               })}
             </p>
-            <p className="font-medium">{appointment.time} Uhr</p>
+            <p className="font-medium text-[var(--foreground)]">{appointment.time} Uhr</p>
           </div>
           {appointment.comment && (
-            <p className="text-xs text-gray-500 mt-2 line-clamp-2">{appointment.comment}</p>
+            <p className="text-xs text-[var(--muted)] mt-2 line-clamp-2">{appointment.comment}</p>
           )}
         </div>
         {appointment.imageUrl && (
           <img
             src={appointment.imageUrl}
             alt="Inspo"
-            className="w-16 h-16 object-cover rounded border border-gray-200 ml-2"
+            className="w-14 h-14 object-cover rounded-lg border border-[var(--card-border)] shrink-0"
           />
         )}
       </div>
       {(appointment.status === 'confirmed' || appointment.status === 'pending') && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
+        <div className="mt-3 pt-3 border-t border-[var(--card-border)]">
           <button
             onClick={() => {
               if (confirm(`Möchtest du den Termin für ${appointment.customerName} wirklich stornieren?`)) {
                 onStatusChange('cancelled');
               }
             }}
-            className="px-2 py-1 text-xs bg-orange-600 text-white hover:bg-orange-700 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium bg-amber-600 text-white hover:bg-amber-700 rounded-lg transition-colors"
           >
             Stornieren
           </button>
@@ -342,27 +355,27 @@ function AppointmentCard({
   isNew?: boolean;
 }) {
   const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-green-100 text-green-800',
+    pending: 'bg-amber-100 text-amber-800',
+    confirmed: 'bg-emerald-100 text-emerald-800',
     rejected: 'bg-red-100 text-red-800',
-    completed: 'bg-gray-100 text-gray-800',
-    cancelled: 'bg-orange-100 text-orange-800',
+    completed: 'bg-slate-100 text-slate-700',
+    cancelled: 'bg-amber-100 text-amber-800',
   };
 
   return (
     <div
-      className={`border p-6 hover:border-gray-300 transition-colors ${
-        isNew ? 'border-red-300 bg-red-50' : 'border-gray-200'
+      className={`border p-6 rounded-xl transition-all ${
+        isNew ? 'border-rose-300 bg-rose-50/50 shadow-sm' : 'border-[var(--card-border)] bg-[var(--card-bg)] hover:shadow-sm'
       }`}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-lg font-medium text-gray-800">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <h3 className="text-lg font-medium text-[var(--foreground)]">
               {appointment.customerName}
             </h3>
             <span
-              className={`px-2 py-1 rounded text-xs font-medium ${statusColors[appointment.status]}`}
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium ${statusColors[appointment.status]}`}
             >
               {appointment.status === 'pending' && 'Ausstehend'}
               {appointment.status === 'confirmed' && 'Bestätigt'}
@@ -371,9 +384,9 @@ function AppointmentCard({
               {appointment.status === 'cancelled' && 'Storniert'}
             </span>
           </div>
-          <div className="space-y-1 text-sm text-gray-600">
+          <div className="space-y-1 text-sm text-[var(--muted)]">
             <p>
-              <span className="font-medium">Datum:</span>{' '}
+              <span className="font-medium text-[var(--foreground)]">Datum:</span>{' '}
               {new Date(appointment.date).toLocaleDateString('de-DE', {
                 weekday: 'long',
                 day: 'numeric',
@@ -381,28 +394,28 @@ function AppointmentCard({
               })}
             </p>
             <p>
-              <span className="font-medium">Uhrzeit:</span> {appointment.time} Uhr
+              <span className="font-medium text-[var(--foreground)]">Uhrzeit:</span> {appointment.time} Uhr
             </p>
             {appointment.comment && (
-              <p className="mt-3 text-gray-500 italic">{appointment.comment}</p>
+              <p className="mt-3 text-[var(--muted)] italic">{appointment.comment}</p>
             )}
           </div>
           {appointment.imageUrl && (
             <div className="mt-4">
-              <p className="text-sm text-gray-600 mb-2">Inspo Bild:</p>
+              <p className="text-sm text-[var(--muted)] mb-2">Inspo Bild:</p>
               <img
                 src={appointment.imageUrl}
                 alt="Inspo"
-                className="max-w-xs h-auto border border-gray-200 rounded"
+                className="max-w-xs h-auto border border-[var(--card-border)] rounded-xl"
               />
             </div>
           )}
         </div>
-        <div className="ml-4 flex flex-col gap-2">
+        <div className="flex flex-col gap-2 shrink-0">
           {isNew && !appointment.seenByAdmin && (
             <button
               onClick={onMarkSeen}
-              className="px-3 py-1 text-xs bg-gray-800 text-white hover:bg-gray-700 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium bg-[var(--foreground)] text-white hover:opacity-90 rounded-lg transition-colors"
             >
               Als gesehen markieren
             </button>
@@ -411,13 +424,13 @@ function AppointmentCard({
             <>
               <button
                 onClick={() => onStatusChange('confirmed')}
-                className="px-3 py-1 text-xs bg-green-600 text-white hover:bg-green-700 transition-colors"
+                className="px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg transition-colors"
               >
                 Bestätigen
               </button>
               <button
                 onClick={() => onStatusChange('rejected')}
-                className="px-3 py-1 text-xs bg-red-600 text-white hover:bg-red-700 transition-colors"
+                className="px-3 py-1.5 text-xs font-medium bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
               >
                 Ablehnen
               </button>
@@ -430,7 +443,7 @@ function AppointmentCard({
                   onStatusChange('cancelled');
                 }
               }}
-              className="px-3 py-1 text-xs bg-orange-600 text-white hover:bg-orange-700 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium bg-amber-600 text-white hover:bg-amber-700 rounded-lg transition-colors"
             >
               Stornieren
             </button>
